@@ -7,11 +7,20 @@ MFType = TypeVar("MFType", bound="MF")
 
 
 class MF(object):
+    """Matrix Factorization"""
+
     def __init__(
         self,
         df: pd.DataFrame,
         latent_dim: int,
     ):
+        """Inits MF
+
+        Args:
+            df (pd.DataFrame): User-Item Rating 행렬(m users x n items)
+            latent_dim (int): Latent Matrix 차원
+        """
+
         self.df = df
         self.latent_dim = latent_dim
 
@@ -21,6 +30,8 @@ class MF(object):
     def _init_params(
         self,
     ):
+        """Initialize Parameters"""
+
         self.P = torch.randn(len(self.users), self.latent_dim, requires_grad=True)
         self.Q = torch.randn(self.latent_dim, len(self.items), requires_grad=True)
 
@@ -33,6 +44,8 @@ class MF(object):
     def _update_prediction(
         self,
     ):
+        """Update Predicted Rating Matrix"""
+
         pred = torch.mm(self.P, self.Q) + self.bias + self.user_bias + self.item_bias.view(1, -1)
 
         self.pred = pd.DataFrame(
@@ -49,6 +62,19 @@ class MF(object):
         lr: float = 0.01,
         beta: float = 0.01,
     ) -> MFType:
+        """Latent Matrix 학습
+
+        Args:
+            optimizer (Callable): Optimizer
+            criterion (Callable): Criterion(Loss)
+            n_epochs (int): Number of epochs
+            lr (float, optional): Learning rate. Defaults to 0.01.
+            beta (float, optional): Regularization rate. Defaults to 0.01.
+
+        Returns:
+            MFType: Fitted Model
+        """
+
         self.optimizer = optimizer(self.trainable_params, lr=lr)
         self.criterion = criterion()
 
@@ -83,6 +109,16 @@ class MF(object):
         user: Union[str, int, float],
         item: Union[str, int, float],
     ) -> float:
+        """Predict using model
+
+        Args:
+            user (Union[str, int, float]): User ID
+            item (Union[str, int, float]): Item ID
+
+        Returns:
+            float: 예측 점수
+        """
+
         if user not in self.users:
             return 3.0
 
